@@ -28,36 +28,45 @@ body {
 
 <script>
 let data = [];
-const el = document.getElementById('cringe');
-const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?gid=0&single=true&output=csv'; // вставьте ссылку на CSV Google Sheet
+const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?output=csv'; // вставьте ссылку на CSV вашего Google Sheet
 
+// Функция для загрузки данных
 async function fetchData() {
   try {
-    const res = await fetch(url + '?cacheBust=' + new Date().getTime());
+    const res = await fetch(url + '?cacheBust=' + new Date().getTime()); // добавляем параметр для обхода кэша
     const text = await res.text();
     const lines = text.split('\n').slice(1); // пропускаем заголовок
-    data = lines.map(l => l.trim()).filter(Boolean);
-    console.log('Data loaded:', data);
+
+    // берём все колонки и объединяем в один массив
+    data = [];
+    lines.forEach(line => {
+      const cells = line.split(',').map(c => c.trim()).filter(Boolean);
+      data.push(...cells);
+    });
   } catch(e) {
     console.error('Ошибка загрузки данных:', e);
   }
 }
 
+// Функция для показа случайного кринжа
 function showNext() {
   if(data.length === 0) return;
   const index = Math.floor(Math.random() * data.length);
+  const el = document.getElementById('cringe');
   el.textContent = data[index];
+  el.style.animation = 'none';
+  void el.offsetWidth; // перезапуск анимации
+  el.style.animation = null;
 }
 
-// Подгружаем данные и сразу показываем первый кринж
-async function init() {
-  await fetchData();
-  if(data.length > 0) showNext();
-}
+// обновляем данные каждые 5 секунд
+setInterval(fetchData, 5000);
+// показываем новый кринж каждые 5 секунд
+setInterval(showNext, 10000);
 
-// Интервалы
-setInterval(fetchData, 5000);      // обновляем данные каждые 5 секунд
-setInterval(() => { if(data.length>0) showNext(); }, 10000); // новый кринж каждые 10 секунд
+// первый раз
+fetchData();
+</script>
 
 init();
 </script>
