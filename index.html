@@ -28,15 +28,7 @@ body {
   text-align: center;
   width: 90%;
   opacity: 0;
-  transition: opacity 2s ease; /* плавный fade */
-}
-
-#cringe.fade-in {
-  opacity: 1;
-}
-
-#cringe.fade-out {
-  opacity: 0;
+  transition: opacity 2s ease;
 }
 
 #cringe-meter {
@@ -66,14 +58,19 @@ body {
 </div>
 
 <script>
-let data = ["Test cringe 1", "Another cringe", "Epic cringe!"];
+let data = []; 
 const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?output=csv'; // вставьте ссылку на CSV вашего Google Sheet
+const el = document.getElementById('cringe');
+const meter = document.getElementById('cringe-meter-fill');
+
+// Первый текст сразу покажем
+el.classList.add('fade-in');
 
 async function fetchData() {
   try {
     const res = await fetch(url + '?cacheBust=' + new Date().getTime());
     const text = await res.text();
-    const lines = text.split('\n').slice(1); // пропускаем заголовок
+    const lines = text.split('\n').slice(1);
 
     data = [];
     lines.forEach(line => {
@@ -88,32 +85,27 @@ async function fetchData() {
 function showNext() {
   if(data.length === 0) return;
   const index = Math.floor(Math.random() * data.length);
-  const el = document.getElementById('cringe');
-  
-  // fade-out старого текста
-  el.classList.remove('fade-in');
-  el.classList.add('fade-out');
 
+  // fade-in плавно
+  el.style.opacity = 0;
   setTimeout(() => {
     el.textContent = data[index];
-    // fade-in нового текста
-    el.classList.remove('fade-out');
-    el.classList.add('fade-in');
+    el.style.opacity = 1;
+  }, 50);
 
-    // обновляем кринжометр случайно
-    const meter = document.getElementById('cringe-meter-fill');
-    const randomLevel = Math.floor(Math.random() * 100); // 0-100%
-    meter.style.width = randomLevel + '%';
-  }, 1000); // совпадает с fade-out transition
+  // обновляем кринжометр
+  const randomLevel = Math.floor(Math.random() * 100);
+  meter.style.width = randomLevel + '%';
 }
 
-// обновляем данные каждые 5 секунд
+// Обновляем данные каждые 5 секунд
 setInterval(fetchData, 5000);
-// показываем новый кринж каждые 10 секунд
+// Показываем новый кринж каждые 10 секунд
 setInterval(showNext, 10000);
 
 // первый раз
 fetchData();
+showNext();
 </script>
 
 </body>
