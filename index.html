@@ -68,12 +68,14 @@ async function fetchData() {
   try {
     const res = await fetch(url + '?cacheBust=' + new Date().getTime());
     const text = await res.text();
-    const lines = text.split('\n').slice(1); // пропускаем заголовок
+    const lines = text.split('\n');
+
     data = [];
-    lines.forEach(line => {
-      const cells = line.split(',').map(c => c.trim()).filter(Boolean);
-      data.push(...cells);
-    });
+    for(let i = 1; i < lines.length; i++) { // пропускаем заголовок
+      const line = lines[i].trim();
+      if(line) data.push(line); // берём всю строку целиком
+    }
+    console.log('Data loaded:', data);
   } catch(e) {
     console.error('Ошибка загрузки данных:', e);
   }
@@ -102,8 +104,8 @@ async function init() {
   if(data.length > 0) showNext();
 }
 
-// интервалы
-setInterval(fetchData, 5000);          // обновляем данные каждые 5 секунд
+// Интервалы
+setInterval(fetchData, 5000);                   // обновляем данные каждые 5 секунд
 setInterval(() => { if(data.length > 0) showNext(); }, 10000); // показываем новый кринж каждые 10 секунд
 
 init();
