@@ -1,34 +1,69 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Cringe Live Display</title>
 <style>
-  body {
-    background: black;
-    color: #ff00ff;
-    font-family: 'Arial', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
-  #cringe {
-    font-size: 60px;
-    text-align: center;
-    width: 90%;
-    animation: fadein 1s;
-  }
+body {
+  background: black;
+  color: #ff00ff;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  @keyframes fadein {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
+#subtitle {
+  font-size: 24px;
+  color: #ff88ff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#cringe {
+  font-size: 60px;
+  text-align: center;
+  width: 90%;
+  opacity: 0;
+  transition: opacity 2s ease; /* плавный fade */
+}
+
+#cringe.fade-in {
+  opacity: 1;
+}
+
+#cringe.fade-out {
+  opacity: 0;
+}
+
+#cringe-meter {
+  width: 60%;
+  height: 20px;
+  background: #222;
+  border-radius: 10px;
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+#cringe-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: #ff00ff;
+  transition: width 1s ease;
+}
 </style>
 </head>
 <body>
-<div id="cringe">Загружаем кринж…</div>
+
+<div id="subtitle">My cringe of the year</div>
+<div id="cringe">Loading cringe…</div>
+
+<div id="cringe-meter">
+  <div id="cringe-meter-fill"></div>
+</div>
 
 <script>
 let data = [];
@@ -36,10 +71,15 @@ const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDP
 
 async function fetchData() {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url + '?cacheBust=' + new Date().getTime());
     const text = await res.text();
-    const lines = text.split('\n');
-    data = lines.slice(1).map(line => line.split(',')[0]).filter(Boolean); // берём первую колонку
+    const lines = text.split('\n').slice(1); // пропускаем заголовок
+
+    data = [];
+    lines.forEach(line => {
+      const cells = line.split(',').map(c => c.trim()).filter(Boolean);
+      data.push(...cells);
+    });
   } catch(e) {
     console.error('Ошибка загрузки данных:', e);
   }
@@ -49,19 +89,32 @@ function showNext() {
   if(data.length === 0) return;
   const index = Math.floor(Math.random() * data.length);
   const el = document.getElementById('cringe');
-  el.textContent = data[index];
-  el.style.animation = 'none';
-  void el.offsetWidth; // перезапуск анимации
-  el.style.animation = null;
+  
+  // fade-out старого текста
+  el.classList.remove('fade-in');
+  el.classList.add('fade-out');
+
+  setTimeout(() => {
+    el.textContent = data[index];
+    // fade-in нового текста
+    el.classList.remove('fade-out');
+    el.classList.add('fade-in');
+
+    // обновляем кринжометр случайно
+    const meter = document.getElementById('cringe-meter-fill');
+    const randomLevel = Math.floor(Math.random() * 100); // 0-100%
+    meter.style.width = randomLevel + '%';
+  }, 1000); // совпадает с fade-out transition
 }
 
-// Обновляем данные каждые 10 секунд
-setInterval(fetchData, 10000);
-// Показываем новый кринж каждые 5 секунд
-setInterval(showNext, 5000);
+// обновляем данные каждые 5 секунд
+setInterval(fetchData, 5000);
+// показываем новый кринж каждые 10 секунд
+setInterval(showNext, 10000);
 
 // первый раз
 fetchData();
 </script>
+
 </body>
 </html>
