@@ -9,104 +9,55 @@ body {
   color: #ff00ff;
   font-family: 'Arial', sans-serif;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   overflow: hidden;
 }
 
-#subtitle {
-  font-size: 24px;
-  color: #ff88ff;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
 #cringe {
   font-size: 60px;
   text-align: center;
   width: 90%;
-  opacity: 1; /* сразу видимый */
-  transition: opacity 2s ease;
-}
-
-#cringe-meter {
-  width: 60%;
-  height: 20px;
-  background: #222;
-  border-radius: 10px;
-  margin-top: 40px;
-  overflow: hidden;
-}
-
-#cringe-meter-fill {
-  height: 100%;
-  width: 0%;
-  background: #ff00ff;
-  transition: width 1s ease;
 }
 </style>
 </head>
 <body>
 
-<div id="subtitle">My cringe of the year</div>
 <div id="cringe">Loading cringe…</div>
 
-<div id="cringe-meter">
-  <div id="cringe-meter-fill"></div>
-</div>
-
 <script>
-const el = document.getElementById('cringe');
-const meter = document.getElementById('cringe-meter-fill');
 let data = [];
-const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?gid=0&single=true&output=csv'; // вставьте ссылку на CSV вашего Google Sheet
+const el = document.getElementById('cringe');
+const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?gid=0&single=true&output=csv'; // вставьте ссылку на CSV Google Sheet
 
-// Загружаем данные из Google Sheet
 async function fetchData() {
   try {
     const res = await fetch(url + '?cacheBust=' + new Date().getTime());
     const text = await res.text();
-    const lines = text.split('\n');
-
-    data = [];
-    for(let i = 1; i < lines.length; i++) { // пропускаем заголовок
-      const line = lines[i].trim();
-      if(line) data.push(line); // берём всю строку целиком
-    }
+    const lines = text.split('\n').slice(1); // пропускаем заголовок
+    data = lines.map(l => l.trim()).filter(Boolean);
     console.log('Data loaded:', data);
   } catch(e) {
     console.error('Ошибка загрузки данных:', e);
   }
 }
 
-// Показываем следующий кринж
 function showNext() {
   if(data.length === 0) return;
   const index = Math.floor(Math.random() * data.length);
-
-  // fade-out и fade-in
-  el.style.opacity = 0;
-  setTimeout(() => {
-    el.textContent = data[index];
-    el.style.opacity = 1;
-  }, 200);
-
-  // обновляем кринжометр
-  const randomLevel = Math.floor(Math.random() * 100);
-  meter.style.width = randomLevel + '%';
+  el.textContent = data[index];
 }
 
-// Инициализация: сначала подгружаем данные, потом показываем первый кринж
+// Подгружаем данные и сразу показываем первый кринж
 async function init() {
   await fetchData();
   if(data.length > 0) showNext();
 }
 
 // Интервалы
-setInterval(fetchData, 5000);                   // обновляем данные каждые 5 секунд
-setInterval(() => { if(data.length > 0) showNext(); }, 10000); // показываем новый кринж каждые 10 секунд
+setInterval(fetchData, 5000);      // обновляем данные каждые 5 секунд
+setInterval(() => { if(data.length>0) showNext(); }, 10000); // новый кринж каждые 10 секунд
 
 init();
 </script>
