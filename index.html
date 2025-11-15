@@ -1,5 +1,5 @@
-<<!DOCTYPE html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Cringe Live Display</title>
@@ -28,31 +28,23 @@
 </style>
 </head>
 <body>
-<div id="cringe">Loading cringe…</div>
+<div id="cringe">Loading Cringe…</div>
 
 <script>
 let data = [];
-const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?output=csv'; // вставьте ссылку на CSV вашего Google Sheet
+const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?gid=0&single=true&output=csv'; // вставьте ссылку на CSV вашего Google Sheet
 
-// Функция для загрузки данных
 async function fetchData() {
   try {
-    const res = await fetch(url + '?cacheBust=' + new Date().getTime()); // добавляем параметр для обхода кэша
+    const res = await fetch(url);
     const text = await res.text();
-    const lines = text.split('\n').slice(1); // пропускаем заголовок
-
-    // берём все колонки и объединяем в один массив
-    data = [];
-    lines.forEach(line => {
-      const cells = line.split(',').map(c => c.trim()).filter(Boolean);
-      data.push(...cells);
-    });
+    const lines = text.split('\n');
+    data = lines.slice(1).map(line => line.split(',')[0]).filter(Boolean); // берём первую колонку
   } catch(e) {
     console.error('Ошибка загрузки данных:', e);
   }
 }
 
-// Функция для показа случайного кринжа
 function showNext() {
   if(data.length === 0) return;
   const index = Math.floor(Math.random() * data.length);
@@ -63,10 +55,10 @@ function showNext() {
   el.style.animation = null;
 }
 
-// обновляем данные каждые 5 секунд
-setInterval(fetchData, 5000);
-// показываем новый кринж каждые 5 секунд
-setInterval(showNext, 10000);
+// Обновляем данные каждые 10 секунд
+setInterval(fetchData, 10000);
+// Показываем новый кринж каждые 5 секунд
+setInterval(showNext, 5000);
 
 // первый раз
 fetchData();
