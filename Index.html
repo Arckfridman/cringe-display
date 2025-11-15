@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Cringe Live Display</title>
+<style>
+  body {
+    background: black;
+    color: #ff00ff;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #cringe {
+    font-size: 60px;
+    text-align: center;
+    width: 90%;
+    animation: fadein 1s;
+  }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+<div id="cringe">Загружаем кринж…</div>
+
+<script>
+let data = [];
+const url ='https://docs.google.com/spreadsheets/d/e/2PACX-1vRd-ERPx33CG15jhzeDPPjEeWfmyrRzt3aTKEzcXK4jTMKKN2gR_g7mQ6loxdqG45ILeWGJux8hm2c-/pub?gid=0&single=true&output=csv'; // вставьте ссылку на CSV вашего Google Sheet
+
+async function fetchData() {
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    const lines = text.split('\n');
+    data = lines.slice(1).map(line => line.split(',')[0]).filter(Boolean); // берём первую колонку
+  } catch(e) {
+    console.error('Ошибка загрузки данных:', e);
+  }
+}
+
+function showNext() {
+  if(data.length === 0) return;
+  const index = Math.floor(Math.random() * data.length);
+  const el = document.getElementById('cringe');
+  el.textContent = data[index];
+  el.style.animation = 'none';
+  void el.offsetWidth; // перезапуск анимации
+  el.style.animation = null;
+}
+
+// Обновляем данные каждые 10 секунд
+setInterval(fetchData, 10000);
+// Показываем новый кринж каждые 5 секунд
+setInterval(showNext, 5000);
+
+// первый раз
+fetchData();
+</script>
+</body>
+</html>
